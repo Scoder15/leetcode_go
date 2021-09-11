@@ -1,28 +1,45 @@
 package main
 
+type ListNode struct {
+	Val  int
+	Next ListNode
+}
+
 func main() {
 
 }
 
-func quickSort(nums []int, left, right int) {
-	if left >= right {
-		return
+func mergeListNodes(p, q *ListNode) *ListNode {
+	if p == nil {
+		return q
 	}
-	k := partion(nums, 0, len(nums)-1)
-	quickSort(nums, left, k-1)
-	quickSort(nums, k+1, right)
+	if q == nil {
+		return p
+	}
+	if p.Val < q.Val {
+		p.Next = mergeListNodes(p.Next, q)
+		return p
+	}
+	q.Next = mergeListNodes(p, q.Next)
+	return q
 }
 
-func partion(nums []int, left, right int) int {
-	privot := nums[left]
-	j := left
-	i := j - 1
-	for j = left; j < right; i++ {
-		if nums[j] >= privot {
-			i++
-			nums[i], nums[j] = nums[j], nums[i]
+func mergeListNodes1(p, q *ListNode) *ListNode {
+	//p，q长短
+	for p != nil || q != nil {
+		if p.Val < q.Val {
+
+			p = p.Next
+		} else {
+			tmp := p.Next
+			p.Next = q
+			p.Next.Next = tmp
+			q = q.Next
+		}
+		//p空q不空
+		if p.Next == nil && q.Next != nil {
+			p.Next = q
 		}
 	}
-	nums[i+1], nums[right] = nums[right], nums[i+1]
-	return i + 1
+	return p
 }
