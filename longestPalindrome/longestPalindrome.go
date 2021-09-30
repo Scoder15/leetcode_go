@@ -4,8 +4,47 @@ import "fmt"
 
 func main() {
 	s := "babad"
-	fmt.Println(longestPalindrome(s))
+	fmt.Println(longestPalindromeDp(s))
 
+}
+
+func longestPalindromeDp(s string) string {
+	n := len(s)
+	dp := make([][]bool, n)
+	maxLen := 0
+	maxStart := 0
+	maxEnd := 0
+	for i := 0; i < n; i++ {
+		dp[i] = make([]bool, n)
+		for j := 0; j < n; j++ {
+			dp[i][j] = false
+		}
+	}
+	for i := n - 1; i >= 0; i-- {
+		for j := i; j < n; j++ {
+			if s[i] == s[j] {
+				if j-i <= 1 {
+					if j-i+1 > maxLen {
+						maxLen = j - i + 1
+						maxStart = i
+						maxEnd = j
+					}
+					dp[i][j] = true
+				} else {
+					if dp[i+1][j-1] {
+						if j-i+1 > maxLen {
+							maxLen = j - i + 1
+							maxStart = i
+							maxEnd = j
+						}
+						dp[i][j] = true
+					}
+				}
+			}
+		}
+	}
+	//fmt.Println("maxStart:", maxStart, " maxEnd:", maxEnd)
+	return s[maxStart : maxEnd+1]
 }
 
 func longestPalindrome(s string) string {
