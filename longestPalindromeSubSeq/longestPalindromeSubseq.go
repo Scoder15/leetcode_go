@@ -4,6 +4,28 @@ func main() {
 
 }
 
+//状态优化版本
+func longestPalindromeSubseq1(s string) int {
+	n := len(s)
+	dp := make([]int, n)
+	for i := 0; i < n; i++ {
+		dp[i] = 1
+	}
+	for i := n - 2; i >= 0; i-- {
+		pre := 0
+		for j := i + 1; j < n; j++ {
+			temp := dp[j]
+			if s[i] == s[j] {
+				dp[j] = pre + 2
+			} else {
+				dp[j] = max(dp[j], dp[j-1])
+			}
+			pre = temp
+		}
+	}
+	return dp[n-1]
+}
+
 func longestPalindromeSubseq(s string) int {
 	n := len(s)
 	dp := make([][]int, n)
