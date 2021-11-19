@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 )
@@ -10,19 +11,6 @@ type TreeNode struct {
 	Val   int
 	Left  *TreeNode
 	Right *TreeNode
-}
-
-func main() {
-	// s := "lrloseumgh"
-	// k := 6
-	// fmt.Println(reverseLeftWords(s, k))
-	// nums := []int{2, 3, 1, 0, 2, 5, 3}
-	// fmt.Println(findRepeartNumber(nums))
-	//nums := [][]int{{1, 2, 5}, {3, 2, 1}}
-	//fmt.Println(maxValue(nums))
-	//num := 12258
-	//fmt.Println(lengthOfLongestSubstring("aabaab!bb"))
-	fmt.Println(reverseWords("a good   example"))
 }
 
 func reverseLeftWords(s string, n int) string {
@@ -407,6 +395,207 @@ func reverseStr(s *[]string) {
 }
 
 func exist(board [][]byte, word string) bool {
+	m := len(board)
+	n := len(board[0])
+	for i := 0; i < m; i++ {
+		for j := 0; j < n; j++ {
+			if dfs(board, word, i, j, 0) {
+				return true
+			}
+		}
+	}
 	return false
+}
 
+func dfs(board [][]byte, word string, i, j, k int) bool {
+	if i < 0 || i > len(board)-1 || j < 0 || j > len(board[0])-1 || board[i][j] != word[k] {
+		return false
+	}
+	if k == len(word)-1 {
+		return true
+	}
+	board[i][j] = '.'
+	res := dfs(board, word, i+1, j, k+1) || dfs(board, word, i, j+1, k+1) || dfs(board, word, i-1, j, k+1) || dfs(board, word, i, j-1, k+1)
+	board[i][j] = word[k]
+	return res
+}
+
+func sumNums(n int) int {
+	ans := 0
+	var sum func(int) bool
+	sum = func(n int) bool {
+		ans += n
+		return n > 0 && sum(n-1)
+	}
+	sum(n)
+	return ans
+}
+
+func lastRemaining(n int, m int) int {
+	//	return f1(n, m)
+	res := 0
+	for i := 2; i <= n; i++ {
+		res = (m + res) % i
+	}
+	return res
+}
+
+func f1(n, m int) int {
+	if n == 1 {
+		return 0
+	}
+	x := f1(n-1, m)
+	return (m + x) % n
+}
+
+func strToInt(str string) int {
+	str = strings.TrimSpace(str)
+	result := 0
+	sign := 1
+	for i, v := range str {
+		if v >= '0' && v <= '9' {
+			result = result*10 + int(v-'0')
+		} else if v == '+' && i == 0 {
+			sign = 1
+		} else if v == '-' && i == 0 {
+			sign = -1
+		} else {
+			break
+		}
+		if result > math.MaxInt32 {
+			if sign == -1 {
+				return math.MinInt32
+			} else {
+				return math.MaxInt32
+			}
+		}
+
+	}
+	return result * sign
+
+}
+
+func maxSlidingWindow(nums []int, k int) []int {
+	if len(nums) < k || len(nums) == 0 {
+		return []int{}
+	}
+	windows := make([]int, 0, k)
+	result := make([]int, 0, len(nums)-k+1)
+	for i, v := range nums {
+		if i >= k && windows[0] <= i-k {
+			windows = windows[1:]
+		}
+		for len(windows) > 0 && nums[windows[len(windows)-1]] < v {
+			windows = windows[0 : len(windows)-1]
+		}
+		windows = append(windows, i)
+		if i >= k-1 {
+			result = append(result, nums[windows[0]])
+		}
+	}
+	return result
+
+}
+
+func maxSlidingWindowSum(nums []int, k int) []int {
+	windowsSum := 0
+	n := len(nums)
+	res := make([]int, 0)
+	for i := 0; i < k; i++ {
+		windowsSum += nums[i]
+	}
+	res = append(res, windowsSum)
+	for i := k; i < n; i++ {
+		windowsSum += nums[i] - nums[i-k]
+		res = append(res, windowsSum)
+	}
+	return res
+}
+
+func minNumber(nums []int) string {
+	return ""
+}
+
+func serialize(root *TreeNode) string {
+	if root == nil {
+		return "#"
+	}
+	return strconv.Itoa(root.Val) + "," + serialize(root.Left) + "," + serialize(root.Right)
+}
+
+func deserialize(list string) *TreeNode {
+	ll := strings.Split(list, ",")
+	return buildTree(&ll)
+}
+
+func buildTree(list *[]string) *TreeNode {
+	rootVal := (*list)[0]
+	*list = (*list)[1:]
+	if rootVal == "#" {
+		return nil
+	}
+	val, _ := strconv.Atoi(rootVal)
+	root := &TreeNode{Val: val}
+	root.Left = buildTree(list)
+	root.Right = buildTree(list)
+	return root
+}
+
+func inorder(root *TreeNode) []int {
+	res := make([]int, 0)
+	stack := make([]*TreeNode, 0)
+	cur := root
+	stack = append(stack, cur)
+	for cur != nil || len(stack) > 0 {
+		if cur != nil {
+			stack = append(stack, cur)
+			cur = cur.Left
+		} else {
+			v := stack[0]
+			stack = stack[1:]
+			res = append(res, v.Val)
+			cur = cur.Right
+		}
+	}
+	return res
+
+}
+
+func postorder(root *TreeNode) []int {
+	if root == nil {
+		return []int{}
+	}
+	res := make([]int, 0)
+	stack := make([]*TreeNode, 0)
+	cur := root
+	stack = append(stack, cur)
+	for len(stack) > 0 {
+		v := stack[0]
+		stack = stack[1:]
+		res = append(res, v.Val)
+		if v.Left != nil {
+			stack = append(stack, v.Left)
+		}
+		if v.Right != nil {
+			stack = append(stack)
+		}
+	}
+	reverseArr(&res)
+	return res
+}
+
+func main() {
+	// s := "lrloseumgh"
+	// k := 6
+	// fmt.Println(reverseLeftWords(s, k))
+	// nums := []int{2, 3, 1, 0, 2, 5, 3}
+	// fmt.Println(findRepeartNumber(nums))
+	//nums := [][]int{{1, 2, 5}, {3, 2, 1}}
+	//fmt.Println(maxValue(nums))
+	//num := 12258
+	//fmt.Println(lengthOfLongestSubstring("aabaab!bb"))
+	//	fmt.Println(reverseWords("a good   example"))
+	//fmt.Println(strToInt("-91283472332"))
+	nums := []int{1, 3, -1, -3, 5, 3, 6, 7}
+	fmt.Println(maxSlidingWindow(nums, 3))
 }
