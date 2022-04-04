@@ -13,6 +13,11 @@ type TreeNode struct {
 	Right *TreeNode
 }
 
+type ListNode struct {
+	Val  int
+	Next *ListNode
+}
+
 func reverseLeftWords(s string, n int) string {
 	s1 := s[n:]
 	s2 := s[:n]
@@ -584,6 +589,331 @@ func postorder(root *TreeNode) []int {
 	return res
 }
 
+func mergeTwoLists(l1 *ListNode, l2 *ListNode) *ListNode {
+	if l1 == nil {
+		return l2
+	}
+	if l2 == nil {
+		return l1
+	}
+	tmp := &ListNode{Val: 0}
+	cur := tmp
+	for l1 != nil && l2 != nil {
+		if l1.Val <= l2.Val {
+			tmp.Next = l1
+			l1 = l1.Next
+		} else {
+			tmp.Next = l2
+			l2 = l2.Next
+		}
+		tmp = tmp.Next
+	}
+	if l1 != nil {
+		tmp.Next = l1
+	}
+	if l2 != nil {
+		tmp.Next = l2
+	}
+	return cur.Next
+}
+
+func mergeKLists(lists []*ListNode) *ListNode {
+	if len(lists) == 0 {
+		return nil
+	}
+
+	if len(lists) == 1 {
+		return lists[0]
+	}
+
+	mid := len(lists) / 2
+	left := mergeKLists(lists[:mid])
+	right := mergeKLists(lists[mid:len(lists)])
+	return mergeTwoLists(left, right)
+}
+
+func topKFrequent(nums []int, k int) []int {
+	return []int{}
+
+}
+
+func minWindow(s string, t string) string {
+	if len(s) < len(t) {
+		return ""
+	}
+	resCount := 0
+	left := 0
+	right := 0
+	start := 0
+	end := 0
+	need := make(map[byte]int, 0)
+	tMap := make(map[byte]bool, 0)
+	isInit := true
+	for i := 0; i < len(t); i++ {
+		if _, ok := need[t[i]]; !ok {
+			need[t[i]] = 1
+		} else {
+			need[t[i]]++
+		}
+		tMap[t[i]] = true
+	}
+	//fmt.Println("need:", need)
+	needCount := len(t)
+	for right < len(s) {
+		//subStr := s[left : right+1]
+		if _, ok := need[s[right]]; !ok {
+			need[s[right]] = -1
+		} else {
+
+			if need[s[right]] > 0 {
+
+				needCount--
+			}
+			need[s[right]]--
+		}
+		if needCount == 0 {
+			for left < right && need[s[left]] < 0 {
+				need[s[left]]++
+				left++
+			}
+			if isInit {
+				resCount = right - left + 1
+				start = left
+				end = right + 1
+				isInit = false
+			}
+			if right-left < resCount {
+				resCount = right - left + 1
+				start = left
+				end = right + 1
+			}
+
+			if _, ok := need[s[left]]; !ok {
+				need[s[left]] = 1
+			} else {
+				need[s[left]]++
+				needCount++
+			}
+			//fmt.Println("need after:", need, " left:", left, " right:", right)
+			left++
+		}
+		right++
+		//fmt.Println("need after:", need, " left:", left, " right:", right, " needCount:", needCount)
+	}
+	return s[start:end]
+}
+
+func isNeed(need map[byte]int, t string) bool {
+	for i := 0; i < len(t); i++ {
+		if need[t[i]] > 0 {
+			return false
+		}
+	}
+	return true
+}
+
+func minWindowBruit(s string, t string) string {
+	if len(s) < len(t) {
+		return ""
+	}
+	resCount := len(s) + 1
+	res := ""
+
+	for i := 0; i < len(s); i++ {
+		for j := i; j < len(s); j++ {
+			subStr := s[i : j+1]
+			fmt.Println("subStr:", subStr)
+			if isHaveStr(subStr, t) {
+				fmt.Println("hhhhh")
+				if len(subStr) < resCount {
+					res = subStr
+					resCount = len(subStr)
+				}
+			}
+		}
+	}
+	return res
+}
+
+func isHaveStr(s string, t string) bool {
+	if len(s) < len(t) {
+		return false
+	}
+	m := make(map[byte]int, 0)
+	for i := 0; i < len(s); i++ {
+		if _, ok := m[s[i]]; !ok {
+			m[s[i]] = 1
+		} else {
+			m[s[i]]++
+		}
+	}
+	flag := true
+	for i := 0; i < len(t); i++ {
+		if _, ok := m[t[i]]; !ok {
+			flag = false
+		} else {
+			m[t[i]]--
+			if m[t[i]] < 0 {
+				flag = false
+			}
+		}
+	}
+	return flag
+}
+
+func maximalRectangle(matrix []string) int {
+	return 0
+
+}
+
+func maxPathSum(root *TreeNode) int {
+	maxSum := math.MinInt32
+	dfsMaxSum(root, &maxSum)
+	return maxSum
+}
+
+func dfsMaxSum(root *TreeNode, maxSum *int) int {
+	if root == nil {
+		return 0
+	}
+	left := dfsMaxSum(root.Left, maxSum)
+	right := dfsMaxSum(root.Right, maxSum)
+
+	innerMaxSum := left + root.Val + right
+	*maxSum = max(*maxSum, innerMaxSum)
+	outputMaxSum := root.Val + max(left, right)
+	return max(outputMaxSum, 0)
+}
+
+func countSubstrings(s string, dp *[][]bool) {
+	for j := 0; j < len(s); j++ {
+		for i := 0; i <= j; i++ {
+			if s[i] == s[j] {
+				if j-i < 2 || (*dp)[i+1][j-1] {
+					(*dp)[i][j] = true
+				}
+
+			}
+		}
+	}
+}
+
+func minCut(s string) int {
+	isPalim := make([][]bool, len(s))
+	for i := 0; i < len(s); i++ {
+		isPalim[i] = make([]bool, len(s))
+		for j := 0; j < len(s); j++ {
+			isPalim[i][j] = false
+		}
+	}
+	countSubstrings(s, &isPalim)
+	//dp初始化
+	dp := make([]int, len(s))
+	dp[0] = 0
+	for i := 1; i < len(s); i++ {
+		dp[i] = i
+	}
+	for i := 1; i < len(s); i++ {
+		if isPalim[0][i] {
+			dp[i] = 0
+			continue
+		}
+		for j := 0; j < i; j++ {
+			if isPalim[j+1][i] {
+				dp[i] = min(dp[j]+1, dp[i])
+			}
+		}
+	}
+
+	return dp[len(s)-1]
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func longestIncreasingPath(matrix [][]int) int {
+	m := len(matrix)
+	n := len(matrix[0])
+	res := 0
+	cache := make([][]int, m)
+	//初始化为0
+	for i := 0; i < m; i++ {
+		cache[i] = make([]int, n)
+	}
+	for i := 0; i < m; i++ {
+		for j := 0; j < n; j++ {
+			//visited数组需要重新置零
+			//if visited[i][j] == 0 {
+			dfs112(i, j, matrix, cache, math.MinInt64)
+			res = max(res, cache[i][j])
+		}
+	}
+	return res
+}
+
+var dir = [][]int{{-1, 0}, {1, 0}, {0, -1}, {0, 1}}
+
+func dfs112(x, y int, matrix [][]int, cache [][]int, lastNum int) int {
+	//(*visited)[x][y] = 1
+	if matrix[x][y] <= lastNum {
+		return 0
+	}
+	if cache[x][y] > 0 {
+		return cache[x][y]
+	}
+	count := 1
+	for i := 0; i < 4; i++ {
+		nx := x + dir[i][0]
+		ny := x + dir[i][1]
+		if isBoard(nx, ny, len(matrix), len(matrix[0])) {
+			count = max(count, dfs112(nx, ny, matrix, cache, matrix[x][y])+1)
+		}
+	}
+	cache[x][y] = count
+	return count
+}
+
+func isBoard(x, y int, m, n int) bool {
+	return x >= 0 && x < m && y >= 0 && y < n
+}
+
+func pathSum(root *TreeNode, target int) [][]int {
+	if root == nil {
+		return [][]int{}
+	}
+	res := make([][]int, 0)
+	track := make([]int, 0)
+	sum := target
+	dfs34(root, &track, &res, sum)
+	return res
+}
+
+func dfs34(root *TreeNode, track *[]int, res *[][]int, sum int) {
+	if root == nil {
+		return
+	}
+	*track = append(*track, root.Val)
+	if sum == root.Val && root.Left == nil && root.Right == nil {
+		tmp := make([]int, len(*track))
+		copy(tmp, *track)
+		*res = append(*res, tmp)
+	}
+
+	dfs34(root.Left, track, res, sum-root.Val)
+	dfs34(root.Right, track, res, sum-root.Val)
+
+	*track = (*track)[1 : len(*track)-1]
+}
+
+func reverseSwitchStr(s string) string {
+	res := ""
+	return res
+}
+
 func main() {
 	// s := "lrloseumgh"
 	// k := 6
@@ -596,6 +926,13 @@ func main() {
 	//fmt.Println(lengthOfLongestSubstring("aabaab!bb"))
 	//	fmt.Println(reverseWords("a good   example"))
 	//fmt.Println(strToInt("-91283472332"))
-	nums := []int{1, 3, -1, -3, 5, 3, 6, 7}
-	fmt.Println(maxSlidingWindow(nums, 3))
+	// nums := []int{1, 3, -1, -3, 5, 3, 6, 7}
+	// fmt.Println(maxSlidingWindow(nums, 3))
+	// s := "ADOBECODEBANC"
+	// t := "ABC"
+	// s := "a"
+	// t := "a"
+	s := "cabwefgewcwaefgcf"
+	t := "cae"
+	fmt.Println(minWindow(s, t))
 }
